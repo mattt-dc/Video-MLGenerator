@@ -1,0 +1,8 @@
+# Ignore everything in the OutputVideos folder
+OutputVideos/*
+
+# Ignore all .mp4 files in the Videos folder
+Videos/*.mp4
+
+# Ignore all .txt files in the ActionLogs folder
+ActionLogs/*.txt

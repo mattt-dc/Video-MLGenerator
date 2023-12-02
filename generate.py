@@ -1,10 +1,14 @@
 import requests
 import base64
+import os
+import json
+import shutil
 
-with open("/tmp/c0a63d8f1b4abb3545811c7e8668d9f61c5bcc7e/birthday.mp4", "rb") as image_file:
-    encoded_string = base64.b64encode(image_file.read()).decode()
+def GetVideoDescription(video_file):
+    with open(video_file, "rb") as video:
+        encoded_string = base64.b64encode(video.read()).decode()
     
-upload_response = requests.post("http://127.0.0.1:7860/run/upload", json={
+    upload_response = requests.post("http://127.0.0.1:7860/run/upload", json={
 	"data": [
 		{"name": "birthday.mp4", "data": "video/mp4;base64," + encoded_string},
 		None,
@@ -15,10 +19,10 @@ upload_response = requests.post("http://127.0.0.1:7860/run/upload", json={
 	]
 }).json()
 
-upload_data = upload_response["data"]
+    upload_data = upload_response["data"]
 
 
-response = requests.post("http://127.0.0.1:7860/run/send", json={
+    response = requests.post("http://127.0.0.1:7860/run/send", json={
 	"data": [
 		"What is in the image?",
 		[],
@@ -26,9 +30,9 @@ response = requests.post("http://127.0.0.1:7860/run/send", json={
 	]
 }).json()
 
-data = response["data"]
+    data = response["data"]
 
-answer_response = requests.post("http://127.0.0.1:7860/run/answer", json={
+    answer_response = requests.post("http://127.0.0.1:7860/run/answer", json={
 	"data": [
 		data[1],
 		None,
@@ -38,4 +42,64 @@ answer_response = requests.post("http://127.0.0.1:7860/run/answer", json={
 	]
 }).json()
 
-answer_data = answer_response["data"]
+    answer_data = answer_response["data"]
+    answer = answer_data[0][0][1]
+    return answer
+
+
+# Directories
+video_dir = 'Videos'
+text_dir = 'ActionLogs'
+output_dir = 'OutputVideos'
+
+# Ensure output directory exists
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+
+# Scan directories
+video_files = sorted([f for f in os.listdir(video_dir) if f.endswith('.mp4')])
+text_files = sorted([f for f in os.listdir(text_dir) if f.endswith('.txt')])
+
+# Process files
+json_data = []
+
+for i, video_file in enumerate(video_files):
+    base_name = os.path.splitext(video_file)[0]
+    text_file = base_name + '.txt'
+
+    # Copy video to output folder
+    src_video_path = os.path.join(video_dir, video_file)
+    dest_video_path = os.path.join(output_dir, video_file)
+    if not os.path.exists(dest_video_path):
+        shutil.copy(src_video_path, dest_video_path)
+
+    # Get description and text content
+    # description = get_description(src_video_path)
+
+	# get next filename for text and video and use those for video description and text content
+    if not base_name[-1].isdigit():
+        next_base_name = base_name + '-0'
+    else:
+        parts = base_name.split('-')
+        incremented_number = int(parts[-1]) + 1
+        next_base_name = '-'.join(parts[:-1]) + '-' + str(incremented_number)
+        
+    src_next_video_path = os.path.join(video_dir, next_base_name + '.mp4')
+    src_next_text_path = os.path.join(text_dir, next_base_name + '.txt')
+    if not os.path.exists(src_next_video_path) & os.path.exists(src_next_text_path):
+        continue
+
+    with open(src_next_text_path, 'r') as file:
+        text_content = file.read()
+
+    next_description = GetVideoDescription(src_next_video_path)
+        
+    qa_content = {"q": "list the button presses to get the player character to: " + next_description, "a": text_content}
+
+    # Add to JSON data
+    json_entry = {"video": dest_video_path, "QA": [qa_content]}
+    json_data.append(json_entry)
+
+# Save JSON data to a file
+with open('output.json', 'w') as outfile:
+    json.dump(json_data, outfile, indent=4)
