@@ -58,4 +58,4 @@ e.g (the action description is theoretical as it has not be possible to generate
 ## Related Repositories
 
 * [Video and Log Generator Repository](https://github.com/mattt-dc/playwatchvm)
-* [Video-Llama API Access Modifications](https://github.com/mattt-dc/Video-LLaMA)
+* [Video-Llama API Access Modifications](https://github.com/mattt-dc/Video-LLaMA/tree/apisupport)
