@@ -9,3 +9,6 @@ ActionLogs/*.txt
 
 # Ignore the output.json file
 output.json
+
+# Ignore the __pycache__ folder
+__pycache__/
