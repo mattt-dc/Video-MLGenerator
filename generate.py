@@ -8,23 +8,20 @@ def GetVideoDescription(video_file):
     with open(video_file, "rb") as video:
         encoded_string = base64.b64encode(video.read()).decode()
     
-    upload_response = requests.post("http://127.0.0.1:7860/run/upload", json={
+    requests.post("http://127.0.0.1:7860/run/upload", json={
 	"data": [
-		{"name": "birthday.mp4", "data": "video/mp4;base64," + encoded_string},
+		{"name": "video.mp4", "data": "video/mp4;base64," + encoded_string},
 		None,
-		"hello world",
+		"",
 		None,
 		[],
 		False,
 	]
-}).json()
-
-    upload_data = upload_response["data"]
-
+})
 
     response = requests.post("http://127.0.0.1:7860/run/send", json={
 	"data": [
-		"What is in the image?",
+		"What actions are taken in the video?",
 		[],
 		None,
 	]
@@ -56,16 +53,14 @@ output_dir = 'OutputVideos'
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
-# Scan directories
+# Scan video directory
 video_files = sorted([f for f in os.listdir(video_dir) if f.endswith('.mp4')])
-text_files = sorted([f for f in os.listdir(text_dir) if f.endswith('.txt')])
 
 # Process files
 json_data = []
 
 for i, video_file in enumerate(video_files):
     base_name = os.path.splitext(video_file)[0]
-    text_file = base_name + '.txt'
 
     # Copy video to output folder
     src_video_path = os.path.join(video_dir, video_file)
@@ -73,10 +68,7 @@ for i, video_file in enumerate(video_files):
     if not os.path.exists(dest_video_path):
         shutil.copy(src_video_path, dest_video_path)
 
-    # Get description and text content
-    # description = get_description(src_video_path)
-
-	# get next filename for text and video and use those for video description and text content
+    # Get the filename for the next video and text file
     if not base_name[-1].isdigit():
         next_base_name = base_name + '-0'
     else:

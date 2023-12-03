@@ -6,3 +6,6 @@ Videos/*.mp4
 
 # Ignore all .txt files in the ActionLogs folder
 ActionLogs/*.txt
+
+# Ignore the output.json file
+output.json
